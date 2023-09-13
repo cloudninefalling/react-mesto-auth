@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, Routes, useNavigate } from "react-router-dom";
+import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
 import Footer from "./Footer";
 import Header from "./Header";
 import ImagePopup from "./ImagePopup";
@@ -262,6 +262,8 @@ function App() {
                   isOpen={infoTooltipOpen}
                   type={infoTooltipType}
                   onClose={closeAllPopups}
+                  handleEsc={handleEsc}
+                  handleClick={handleClick}
                 />
               </>
             }
@@ -275,6 +277,8 @@ function App() {
               </>
             }
           />
+
+          <Route path="/*" element={<Navigate to="/" />} />
         </Routes>
       </div>
     </CurrentUserContext.Provider>

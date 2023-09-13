@@ -37,10 +37,12 @@ class Auth {
         }
       })
       .then((json) => {
-        if (json.token) {
-          localStorage.setItem("jwt", json.token);
-          return json;
-        }
+        if (json) {
+          if (json.token) {
+            localStorage.setItem("jwt", json.token);
+            return json;
+          }
+        } else return "Error: no json";
       });
   }
 

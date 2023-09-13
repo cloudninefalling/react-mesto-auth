@@ -19,58 +19,90 @@ import auth from "../utils/Auth";
 function App() {
   const [cards, setCards] = React.useState([]);
   const [selectedCard, setSelectedCard] = React.useState({});
-  const [editProfileOpen, setEditProfileOpen] = React.useState(false);
-  const [editAvatarOpen, setEditAvatarOpen] = React.useState(false);
-  const [addPlaceOpen, setAddPlaceOpen] = React.useState(false);
-  const [imagePopupOpen, setImagePopupOpen] = React.useState(false);
-  const [confirmDeleteOpen, setConfirmDeleteOpen] = React.useState(false);
-  const [infoTooltipOpen, setInfotooltipOpen] = React.useState(false);
-  const [infoTooltipType, setInfotooltipType] = React.useState("");
+
+  const [isEditProfileOpen, setEditProfileOpen] = React.useState(false);
+  const [isEditAvatarOpen, setEditAvatarOpen] = React.useState(false);
+  const [isAddPlaceOpen, setAddPlaceOpen] = React.useState(false);
+  const [isImagePopupOpen, setImagePopupOpen] = React.useState(false);
+  const [isConfirmDeleteOpen, setConfirmDeleteOpen] = React.useState(false);
+
+  const [isInfoTooltipOpen, setInfoTooltipOpen] = React.useState(false);
+  const [infoTooltipText, setInfoTooltipText] = React.useState("");
+  const [infoTooltipImage, setInfoTooltipImage] = React.useState("");
+
   const [currentUser, setCurrentUser] = React.useState({});
   const [currentEmail, setCurrentEmail] = React.useState("");
-  const [loggedIn, setLoggedIn] = React.useState(false);
+  const [isLoggedIn, setLoggedIn] = React.useState(false);
+
   const navigate = useNavigate();
 
   React.useEffect(() => {
     //check token
-    if (localStorage.getItem("jwt")) {
-      const jwt = localStorage.getItem("jwt");
+    const jwt = localStorage.getItem("jwt");
+    if (jwt) {
       auth
         .validateToken(jwt)
         .then((res) => {
-          setLoggedIn(true);
-          navigate("/", { replace: true });
-          setCurrentEmail(res.data.email);
+          handleLogin(res.data.email);
         })
         .catch(console.log);
     }
-
-    //set initial profile
-    api
-      .getProfileInfo()
-      .then((res) => {
-        setCurrentUser(res);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-
-    //set initial cards
-    api
-      .getInitialCards()
-      .then(setCards)
-      .catch((err) => console.log(err));
   }, []);
+
+  React.useEffect(() => {
+    if (isLoggedIn) {
+      //set initial profile
+      api
+        .getProfileInfo()
+        .then((res) => {
+          setCurrentUser(res);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+
+      //set initial cards
+      api
+        .getInitialCards()
+        .then(setCards)
+        .catch((err) => console.log(err));
+    }
+  }, [isLoggedIn]);
+
+  React.useEffect(() => {
+    if (
+      isAddPlaceOpen ||
+      isImagePopupOpen ||
+      isEditAvatarOpen ||
+      isEditProfileOpen ||
+      isInfoTooltipOpen ||
+      isConfirmDeleteOpen
+    ) {
+      document.addEventListener("keydown", handleEsc);
+    }
+    return () => {
+      document.removeEventListener("keydown", handleEsc);
+    };
+  }, [
+    isAddPlaceOpen,
+    isImagePopupOpen,
+    isEditAvatarOpen,
+    isEditProfileOpen,
+    isInfoTooltipOpen,
+    isConfirmDeleteOpen,
+  ]);
 
   function handleLogin(email) {
     setLoggedIn(true);
     setCurrentEmail(email);
+    navigate("/", { replace: true });
   }
 
   function handleLogout() {
     localStorage.removeItem("jwt");
     setCurrentEmail("");
     navigate("/sign-in", { replace: true });
+    setLoggedIn(false);
   }
 
   //popups open-close funtions
@@ -92,18 +124,19 @@ function App() {
     setSelectedCard(card);
   }
 
-  function handleOpenTooltip(type) {
-    setInfotooltipType(type);
-    setInfotooltipOpen(true);
+  function handleOpenTooltip({ image, text }) {
+    setInfoTooltipText(text);
+    setInfoTooltipImage(image);
+    setInfoTooltipOpen(true);
   }
 
   function closeAllPopups() {
-    setAddPlaceOpen();
-    setImagePopupOpen();
-    setEditAvatarOpen();
-    setEditProfileOpen();
-    setConfirmDeleteOpen();
-    setInfotooltipOpen();
+    setAddPlaceOpen(false);
+    setImagePopupOpen(false);
+    setEditAvatarOpen(false);
+    setEditProfileOpen(false);
+    setConfirmDeleteOpen(false);
+    setInfoTooltipOpen(false);
   }
 
   function handleCardClick(card) {
@@ -134,11 +167,11 @@ function App() {
       .then(() => {
         setCards((state) =>
           state.filter((cardInState) => {
-            return cardInState._id != card._id;
+            closeAllPopups();
+            return cardInState._id !== card._id;
           })
         );
       })
-      .then(closeAllPopups)
       .catch(console.log);
   }
 
@@ -162,7 +195,7 @@ function App() {
       .catch(console.log);
   }
 
-  function handleAddPlace({ "image-name": name, "image-link": link }) {
+  function handleAddPlace({ name, link }) {
     api
       .uploadImage({ name, link })
       .then((newCard) => {
@@ -176,22 +209,22 @@ function App() {
     if (e.key === "Escape") closeAllPopups();
   };
 
-  const handleClick = (e) => {
+  const handleClosePopupByOverlay = (e) => {
     if (e.target.classList.contains("popup")) closeAllPopups();
   };
 
   return (
     <CurrentUserContext.Provider value={currentUser}>
       <div className="page">
+        <Header email={currentEmail} onLogout={handleLogout} />
         <Routes>
           <Route
             path=""
             element={
               <ProtectedRoute
-                loggedIn={loggedIn}
+                loggedIn={isLoggedIn}
                 element={
                   <>
-                    <Header email={currentEmail} onLogout={handleLogout} />
                     <Main
                       onEditProfile={handleEditProfileClick}
                       onEditAvatar={handleEditAvatarClick}
@@ -205,44 +238,39 @@ function App() {
                     <Footer />
 
                     <EditProfilePopup
-                      isOpen={editProfileOpen}
+                      isOpen={isEditProfileOpen}
                       onClose={closeAllPopups}
                       onUpdateUser={handleUpdateUser}
-                      handleEsc={handleEsc}
-                      handleClick={handleClick}
+                      handleClosePopupByOverlay={handleClosePopupByOverlay}
                     />
 
                     <AddPlacePopup
-                      isOpen={addPlaceOpen}
+                      isOpen={isAddPlaceOpen}
                       onClose={closeAllPopups}
                       onAddPlace={handleAddPlace}
-                      handleEsc={handleEsc}
-                      handleClick={handleClick}
+                      handleClosePopupByOverlay={handleClosePopupByOverlay}
                     />
 
                     <EditAvatarPopup
-                      isOpen={editAvatarOpen}
+                      isOpen={isEditAvatarOpen}
                       onClose={closeAllPopups}
                       onUpdateAvatar={handleUpdateAvatar}
-                      handleEsc={handleEsc}
-                      handleClick={handleClick}
+                      handleClosePopupByOverlay={handleClosePopupByOverlay}
                     />
 
                     <ConfirmDeletePopup
-                      isOpen={confirmDeleteOpen}
+                      isOpen={isConfirmDeleteOpen}
                       onClose={closeAllPopups}
                       currentCard={selectedCard}
                       onDeleteCard={handleCardDelete}
-                      handleEsc={handleEsc}
-                      handleClick={handleClick}
+                      handleClosePopupByOverlay={handleClosePopupByOverlay}
                     />
 
                     <ImagePopup
                       card={selectedCard}
-                      isOpen={imagePopupOpen}
+                      isOpen={isImagePopupOpen}
                       onClose={closeAllPopups}
-                      handleEsc={handleEsc}
-                      handleClick={handleClick}
+                      handleClosePopupByOverlay={handleClosePopupByOverlay}
                     />
                   </>
                 }
@@ -253,17 +281,16 @@ function App() {
             path="sign-in"
             element={
               <>
-                <Header linkText="Регистрация" linkPath="sign-up" />
                 <Login
                   handleLogin={handleLogin}
                   openTooltip={handleOpenTooltip}
                 />
                 <InfoTooltip
-                  isOpen={infoTooltipOpen}
-                  type={infoTooltipType}
+                  isOpen={isInfoTooltipOpen}
+                  text={infoTooltipText}
+                  image={infoTooltipImage}
                   onClose={closeAllPopups}
-                  handleEsc={handleEsc}
-                  handleClick={handleClick}
+                  handleClosePopupByOverlay={handleClosePopupByOverlay}
                 />
               </>
             }
@@ -272,8 +299,14 @@ function App() {
             path="sign-up"
             element={
               <>
-                <Header linkText="Войти" linkPath="sign-in" />
                 <Register openTooltip={handleOpenTooltip} />
+                <InfoTooltip
+                  isOpen={isInfoTooltipOpen}
+                  text={infoTooltipText}
+                  image={infoTooltipImage}
+                  onClose={closeAllPopups}
+                  handleClosePopupByOverlay={handleClosePopupByOverlay}
+                />
               </>
             }
           />

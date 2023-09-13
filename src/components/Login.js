@@ -1,10 +1,15 @@
 import React from "react";
 import AuthForm from "./AuthForm";
 import auth from "../utils/Auth";
-import { useNavigate } from "react-router-dom";
+import tooltipImage from "../images/tooltip__error.svg";
 
-export default function Login(props) {
-  const navigate = useNavigate();
+export default function Login({ openTooltip, handleLogin }) {
+  function showErrorTooltip() {
+    openTooltip({
+      image: tooltipImage,
+      text: "Что-то пошло не так! Попробуйте ещё раз.",
+    });
+  }
 
   function handleSubmit(values) {
     const { email, password } = values;
@@ -12,13 +17,12 @@ export default function Login(props) {
       .login(email, password)
       .then((res) => {
         if (res.token) {
-          props.handleLogin(email);
-          navigate("/", { replace: true });
-        } else props.openTooltip("login");
+          handleLogin(email);
+        } else showErrorTooltip();
       })
       .catch((err) => {
         console.log(err);
-        props.openTooltip("login");
+        showErrorTooltip();
       });
   }
 

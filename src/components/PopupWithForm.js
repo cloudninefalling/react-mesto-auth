@@ -1,44 +1,43 @@
 import React from "react";
 
-export default function PopupWithForm(props) {
-  React.useEffect(() => {
-    if (props.isOpen) {
-      document.addEventListener("keydown", props.handleEsc);
-      document.addEventListener("click", props.handleClick);
-    }
-    return () => {
-      document.removeEventListener("keydown", props.handleEsc);
-      document.removeEventListener("click", props.handleClick);
-    };
-  }, [props.isOpen]);
-
+export default function PopupWithForm({
+  isOpen,
+  name,
+  onSubmit,
+  title,
+  children,
+  submitBtnText,
+  onClose,
+  handleClosePopupByOverlay,
+}) {
   return (
     <div
-      className={`popup ${props.isOpen && "popup_opened"} popup_${props.name}`}
+      className={`popup ${isOpen ? "popup_opened" : ""} popup_${name}`}
+      onClick={handleClosePopupByOverlay}
     >
       <div className="popup__container">
         <form
           className="edit-form"
-          name={props.name}
+          name={name}
           autoComplete="off"
-          onSubmit={props.onSubmit}
+          onSubmit={onSubmit}
         >
-          <h2 className="edit-form__title">{props.title}</h2>
-          {props.children}
+          <h2 className="edit-form__title">{title}</h2>
+          {children}
 
           <button
             className="edit-form__submit"
             type="submit"
-            aria-label={props.submitBtnText}
+            aria-label={submitBtnText}
           >
-            {props.submitBtnText}
+            {submitBtnText}
           </button>
         </form>
         <button
           className="popup__close"
           type="button"
           aria-label="закрыть"
-          onClick={props.onClose}
+          onClick={onClose}
         ></button>
       </div>
     </div>

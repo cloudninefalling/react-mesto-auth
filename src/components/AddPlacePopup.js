@@ -1,7 +1,12 @@
 import React from "react";
 import PopupWithForm from "./PopupWithForm";
 
-export default function AddPlacePopup(props) {
+export default function AddPlacePopup({
+  onAddPlace,
+  isOpen,
+  onClose,
+  handleClosePopupByOverlay,
+}) {
   const [values, setValues] = React.useState({});
 
   const handleChange = (event) => {
@@ -14,35 +19,34 @@ export default function AddPlacePopup(props) {
 
   function handleSubmit(e) {
     e.preventDefault();
-    props.onAddPlace(values);
+    onAddPlace(values);
   }
 
   React.useEffect(() => {
-    if (!props.isOpen) {
+    if (!isOpen) {
       setValues({});
     }
-  }, [props.isOpen]);
+  }, [isOpen]);
 
   return (
     <PopupWithForm
-      isOpen={props.isOpen}
+      isOpen={isOpen}
       name={"add-card"}
       title={"Новое место"}
       submitBtnText={"Новое место"}
-      onClose={props.onClose}
+      onClose={onClose}
       onSubmit={handleSubmit}
-      handleEsc={props.handleEsc}
-      handleClick={props.handleClick}
+      handleClosePopupByOverlay={handleClosePopupByOverlay}
     >
       <input
         className="edit-form__text edit-form__text_input_image-name"
         type="text"
         placeholder="Название"
-        name="image-name"
+        name="name"
         required
         minLength="2"
         maxLength="30"
-        value={values["image-name"] || ""}
+        value={values.name || ""}
         onChange={handleChange}
       />
       <span className="edit-form__input-error-msg" id="image-name-error"></span>
@@ -50,9 +54,9 @@ export default function AddPlacePopup(props) {
         className="edit-form__text edit-form__text_input_image-link"
         type="url"
         placeholder="Ссылка на картинку"
-        name="image-link"
+        name="link"
         required
-        value={values["image-link"] || ""}
+        value={values.link || ""}
         onChange={handleChange}
       />
       <span className="edit-form__input-error-msg" id="image-link-error"></span>

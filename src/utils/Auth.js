@@ -4,23 +4,19 @@ class Auth {
     this.headers = options.headers;
   }
 
+  _getResponseData(res) {
+    if (!res.ok) {
+      return Promise.reject(`Ошибка: ${res.status}`);
+    }
+    return res.json();
+  }
+
   register(email, password) {
     return fetch(`${this.BASE_URL}/signup`, {
       method: "POST",
       headers: this.headers,
       body: JSON.stringify({ email, password }),
-    })
-      .then((res) => {
-        try {
-          if (res.status === 201) return res.json();
-        } catch (e) {
-          return e;
-        }
-      })
-      .then((res) => {
-        return res;
-      })
-      .catch(console.log);
+    }).then(this._getResponseData);
   }
 
   login(email, password) {
@@ -29,13 +25,7 @@ class Auth {
       headers: this.headers,
       body: JSON.stringify({ email, password }),
     })
-      .then((res) => {
-        try {
-          if (res.status === 200) return res.json();
-        } catch (e) {
-          return e;
-        }
-      })
+      .then(this._getResponseData)
       .then((json) => {
         if (json) {
           if (json.token) {
@@ -53,7 +43,7 @@ class Auth {
         ...this.headers,
         Authorization: `Bearer ${token}`,
       },
-    }).then((res) => res.json());
+    }).then(this._getResponseData);
   }
 }
 
@@ -61,5 +51,3 @@ export default new Auth({
   BASE_URL: "https://auth.nomoreparties.co",
   headers: { "Content-Type": "application/json" },
 });
-
-//6500403c36ce0c001a42441a

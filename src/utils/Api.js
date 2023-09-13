@@ -20,8 +20,7 @@ class Api {
   toggleLike(id, isLiked) {
     if (!isLiked) {
       return this._putLike(id);
-    }
-    if (isLiked) {
+    } else {
       return this._deleteLike(id);
     }
   }
@@ -69,8 +68,8 @@ class Api {
       method: "PATCH",
       headers: this._headers,
       body: JSON.stringify({
-        name: name,
-        about: about,
+        name,
+        about,
       }),
     }).then(this._getResponseData);
   }

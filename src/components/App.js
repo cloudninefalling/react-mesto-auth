@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { Route, Routes, useNavigate } from "react-router-dom";
 import Footer from "./Footer";
 import Header from "./Header";
 import ImagePopup from "./ImagePopup";
@@ -14,6 +14,7 @@ import Login from "./Login";
 import Register from "./Register";
 import ProtectedRoute from "./ProtectedRoute";
 import InfoTooltip from "./InfoTooltip";
+import auth from "../utils/Auth";
 
 function App() {
   const [cards, setCards] = React.useState([]);
@@ -23,11 +24,27 @@ function App() {
   const [addPlaceOpen, setAddPlaceOpen] = React.useState(false);
   const [imagePopupOpen, setImagePopupOpen] = React.useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = React.useState(false);
-  const [infoTooltipOpen, setInfotooltipOpen] = React.useState(true);
+  const [infoTooltipOpen, setInfotooltipOpen] = React.useState(false);
+  const [infoTooltipType, setInfotooltipType] = React.useState("");
   const [currentUser, setCurrentUser] = React.useState({});
+  const [currentEmail, setCurrentEmail] = React.useState("");
   const [loggedIn, setLoggedIn] = React.useState(false);
+  const navigate = useNavigate();
 
   React.useEffect(() => {
+    //check token
+    if (localStorage.getItem("jwt")) {
+      const jwt = localStorage.getItem("jwt");
+      auth
+        .validateToken(jwt)
+        .then((res) => {
+          setLoggedIn(true);
+          navigate("/", { replace: true });
+          setCurrentEmail(res.data.email);
+        })
+        .catch(console.log);
+    }
+
     //set initial profile
     api
       .getProfileInfo()
@@ -45,6 +62,19 @@ function App() {
       .catch((err) => console.log(err));
   }, []);
 
+  function handleLogin(email) {
+    setLoggedIn(true);
+    setCurrentEmail(email);
+  }
+
+  function handleLogout() {
+    localStorage.removeItem("jwt");
+    setCurrentEmail("");
+    navigate("/sign-in", { replace: true });
+  }
+
+  //popups open-close funtions
+
   function handleEditProfileClick() {
     setEditProfileOpen(true);
   }
@@ -60,6 +90,11 @@ function App() {
   function handleDeleteBtnClick(card) {
     setConfirmDeleteOpen(true);
     setSelectedCard(card);
+  }
+
+  function handleOpenTooltip(type) {
+    setInfotooltipType(type);
+    setInfotooltipOpen(true);
   }
 
   function closeAllPopups() {
@@ -146,107 +181,103 @@ function App() {
   };
 
   return (
-    <BrowserRouter>
-      <CurrentUserContext.Provider value={currentUser}>
-        <div className="page">
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute
-                  loggedIn={loggedIn}
-                  element={
-                    <>
-                      <Header />
-                      <Main
-                        onEditProfile={handleEditProfileClick}
-                        onEditAvatar={handleEditAvatarClick}
-                        onAddPlace={handleAddPlaceClick}
-                        onCardClick={handleCardClick}
-                        onCardLike={handleCardLike}
-                        onCardDelete={handleDeleteBtnClick}
-                        cards={cards}
-                      />
+    <CurrentUserContext.Provider value={currentUser}>
+      <div className="page">
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute
+                loggedIn={loggedIn}
+                element={
+                  <>
+                    <Header email={currentEmail} onLogout={handleLogout} />
+                    <Main
+                      onEditProfile={handleEditProfileClick}
+                      onEditAvatar={handleEditAvatarClick}
+                      onAddPlace={handleAddPlaceClick}
+                      onCardClick={handleCardClick}
+                      onCardLike={handleCardLike}
+                      onCardDelete={handleDeleteBtnClick}
+                      cards={cards}
+                    />
 
-                      <Footer />
+                    <Footer />
 
-                      <EditProfilePopup
-                        isOpen={editProfileOpen}
-                        onClose={closeAllPopups}
-                        onUpdateUser={handleUpdateUser}
-                        handleEsc={handleEsc}
-                        handleClick={handleClick}
-                      />
+                    <EditProfilePopup
+                      isOpen={editProfileOpen}
+                      onClose={closeAllPopups}
+                      onUpdateUser={handleUpdateUser}
+                      handleEsc={handleEsc}
+                      handleClick={handleClick}
+                    />
 
-                      <AddPlacePopup
-                        isOpen={addPlaceOpen}
-                        onClose={closeAllPopups}
-                        onAddPlace={handleAddPlace}
-                        handleEsc={handleEsc}
-                        handleClick={handleClick}
-                      />
+                    <AddPlacePopup
+                      isOpen={addPlaceOpen}
+                      onClose={closeAllPopups}
+                      onAddPlace={handleAddPlace}
+                      handleEsc={handleEsc}
+                      handleClick={handleClick}
+                    />
 
-                      <EditAvatarPopup
-                        isOpen={editAvatarOpen}
-                        onClose={closeAllPopups}
-                        onUpdateAvatar={handleUpdateAvatar}
-                        handleEsc={handleEsc}
-                        handleClick={handleClick}
-                      />
+                    <EditAvatarPopup
+                      isOpen={editAvatarOpen}
+                      onClose={closeAllPopups}
+                      onUpdateAvatar={handleUpdateAvatar}
+                      handleEsc={handleEsc}
+                      handleClick={handleClick}
+                    />
 
-                      <ConfirmDeletePopup
-                        isOpen={confirmDeleteOpen}
-                        onClose={closeAllPopups}
-                        currentCard={selectedCard}
-                        onDeleteCard={handleCardDelete}
-                        handleEsc={handleEsc}
-                        handleClick={handleClick}
-                      />
+                    <ConfirmDeletePopup
+                      isOpen={confirmDeleteOpen}
+                      onClose={closeAllPopups}
+                      currentCard={selectedCard}
+                      onDeleteCard={handleCardDelete}
+                      handleEsc={handleEsc}
+                      handleClick={handleClick}
+                    />
 
-                      <ImagePopup
-                        card={selectedCard}
-                        isOpen={imagePopupOpen}
-                        onClose={closeAllPopups}
-                        handleEsc={handleEsc}
-                        handleClick={handleClick}
-                      />
-                    </>
-                  }
+                    <ImagePopup
+                      card={selectedCard}
+                      isOpen={imagePopupOpen}
+                      onClose={closeAllPopups}
+                      handleEsc={handleEsc}
+                      handleClick={handleClick}
+                    />
+                  </>
+                }
+              />
+            }
+          />
+          <Route
+            path="/sign-in"
+            element={
+              <>
+                <Header linkText="Регистрация" linkPath="/sign-up" />
+                <Login
+                  handleLogin={handleLogin}
+                  openTooltip={handleOpenTooltip}
                 />
-              }
-            />
-            <Route
-              path="/sign-in"
-              element={
-                <>
-                  <Header linkText="Регистрация" linkPath="/sign-up" />
-                  <Login />
-                  <InfoTooltip
-                    isOpen={infoTooltipOpen}
-                    success={false}
-                    onClose={closeAllPopups}
-                  />
-                </>
-              }
-            />
-            <Route
-              path="sign-up"
-              element={
-                <>
-                  <Header linkText="Войти" linkPath="/sign-in" />
-                  <Register />
-                  <InfoTooltip
-                    isOpen={infoTooltipOpen}
-                    success={true}
-                    onClose={closeAllPopups}
-                  />
-                </>
-              }
-            />
-          </Routes>
-        </div>
-      </CurrentUserContext.Provider>
-    </BrowserRouter>
+                <InfoTooltip
+                  isOpen={infoTooltipOpen}
+                  type={infoTooltipType}
+                  onClose={closeAllPopups}
+                />
+              </>
+            }
+          />
+          <Route
+            path="sign-up"
+            element={
+              <>
+                <Header linkText="Войти" linkPath="/sign-in" />
+                <Register openTooltip={handleOpenTooltip} />
+              </>
+            }
+          />
+        </Routes>
+      </div>
+    </CurrentUserContext.Provider>
   );
 }
 

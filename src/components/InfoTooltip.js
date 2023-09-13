@@ -1,5 +1,5 @@
-import successImage from "../images/tooltip__success.svg";
-import errorImage from "../images/tooltip__error.svg";
+import registerSuccessImage from "../images/tooltip__success.svg";
+import loginErrorImage from "../images/tooltip__error.svg";
 
 export default function InfoTooltip(props) {
   return (
@@ -8,13 +8,13 @@ export default function InfoTooltip(props) {
         <div
           className="popup__tooltip-image"
           style={
-            props.success
-              ? { backgroundImage: `url(${successImage})` }
-              : { backgroundImage: `url(${errorImage})` }
+            props.type === "register"
+              ? { backgroundImage: `url(${registerSuccessImage})` }
+              : { backgroundImage: `url(${loginErrorImage})` }
           }
         />
         <h2 className="popup__tooltip-title">
-          {props.success
+          {props.type === "register"
             ? `Вы успешно зарегистрировались!`
             : "Что-то пошло не так! Попробуйте ещё раз."}
         </h2>

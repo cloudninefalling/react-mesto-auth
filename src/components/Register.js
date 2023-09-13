@@ -1,9 +1,18 @@
 import React from "react";
 import AuthForm from "./AuthForm";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import auth from "../utils/Auth";
 
 export default function Register(props) {
-  function onSubmit() {}
+  const navigate = useNavigate();
+
+  function onSubmit(values) {
+    const { email, password } = values;
+    auth
+      .register(email, password)
+      .then(props.openTooltip("register"))
+      .then(navigate("/sign-in", { replace: true }));
+  }
 
   return (
     <AuthForm

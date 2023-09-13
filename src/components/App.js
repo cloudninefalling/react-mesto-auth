@@ -185,7 +185,7 @@ function App() {
       <div className="page">
         <Routes>
           <Route
-            path="/"
+            path=""
             element={
               <ProtectedRoute
                 loggedIn={loggedIn}
@@ -250,10 +250,10 @@ function App() {
             }
           />
           <Route
-            path="/sign-in"
+            path="sign-in"
             element={
               <>
-                <Header linkText="Регистрация" linkPath="/sign-up" />
+                <Header linkText="Регистрация" linkPath="sign-up" />
                 <Login
                   handleLogin={handleLogin}
                   openTooltip={handleOpenTooltip}
@@ -272,13 +272,13 @@ function App() {
             path="sign-up"
             element={
               <>
-                <Header linkText="Войти" linkPath="/sign-in" />
+                <Header linkText="Войти" linkPath="sign-in" />
                 <Register openTooltip={handleOpenTooltip} />
               </>
             }
           />
 
-          <Route path="/*" element={<Navigate to="/" />} />
+          <Route path="*" element={<Navigate to="" />} />
         </Routes>
       </div>
     </CurrentUserContext.Provider>

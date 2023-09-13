@@ -6,17 +6,20 @@ export default function Header(props) {
     <header className="header">
       <img className="header__logo" src={logo} alt="логотип Место" />
       {props.email && (
-        <div className="header__container">
-          <p className="header__text">{props.email}</p>
-          <button
-            className="header__button"
-            aria-label="Выйти"
-            type="button"
-            onClick={props.onLogout}
-          >
-            Выйти
-          </button>
-        </div>
+        <>
+          <div className="header__container">
+            <p className="header__text">{props.email}</p>
+            <button
+              className="header__button"
+              aria-label="Выйти"
+              type="button"
+              onClick={props.onLogout}
+            >
+              Выйти
+            </button>
+          </div>
+          <button className="header__menu-button"></button>
+        </>
       )}
       {props.linkText && (
         <Link to={props.linkPath} className="header__link">

@@ -51,21 +51,15 @@ function App() {
 
   React.useEffect(() => {
     if (isLoggedIn) {
-      //set initial profile
-      api
-        .getProfileInfo()
+      //set initial profile, cards
+      Promise.all([api.getProfileInfo(), api.getInitialCards()])
         .then((res) => {
-          setCurrentUser(res);
+          const profileInfo = res[0];
+          const cards = res[1];
+          setCurrentUser(profileInfo);
+          setCards(cards);
         })
-        .catch((err) => {
-          console.log(err);
-        });
-
-      //set initial cards
-      api
-        .getInitialCards()
-        .then(setCards)
-        .catch((err) => console.log(err));
+        .catch(console.log);
     }
   }, [isLoggedIn]);
 
@@ -167,10 +161,10 @@ function App() {
       .then(() => {
         setCards((state) =>
           state.filter((cardInState) => {
-            closeAllPopups();
             return cardInState._id !== card._id;
           })
         );
+        closeAllPopups();
       })
       .catch(console.log);
   }
@@ -280,39 +274,26 @@ function App() {
           <Route
             path="sign-in"
             element={
-              <>
-                <Login
-                  handleLogin={handleLogin}
-                  openTooltip={handleOpenTooltip}
-                />
-                <InfoTooltip
-                  isOpen={isInfoTooltipOpen}
-                  text={infoTooltipText}
-                  image={infoTooltipImage}
-                  onClose={closeAllPopups}
-                  handleClosePopupByOverlay={handleClosePopupByOverlay}
-                />
-              </>
+              <Login
+                handleLogin={handleLogin}
+                openTooltip={handleOpenTooltip}
+              />
             }
           />
           <Route
             path="sign-up"
-            element={
-              <>
-                <Register openTooltip={handleOpenTooltip} />
-                <InfoTooltip
-                  isOpen={isInfoTooltipOpen}
-                  text={infoTooltipText}
-                  image={infoTooltipImage}
-                  onClose={closeAllPopups}
-                  handleClosePopupByOverlay={handleClosePopupByOverlay}
-                />
-              </>
-            }
+            element={<Register openTooltip={handleOpenTooltip} />}
           />
 
           <Route path="*" element={<Navigate to="" />} />
         </Routes>
+        <InfoTooltip
+          isOpen={isInfoTooltipOpen}
+          text={infoTooltipText}
+          image={infoTooltipImage}
+          onClose={closeAllPopups}
+          handleClosePopupByOverlay={handleClosePopupByOverlay}
+        />
       </div>
     </CurrentUserContext.Provider>
   );

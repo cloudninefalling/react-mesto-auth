@@ -1,8 +1,17 @@
 import React from "react";
 
-export default function InfoTooltip({ isOpen, image, text, onClose }) {
+export default function InfoTooltip({
+  isOpen,
+  image,
+  text,
+  onClose,
+  handleClosePopupByOverlay,
+}) {
   return (
-    <div className={`popup ${isOpen ? "popup_opened" : ""}`}>
+    <div
+      className={`popup ${isOpen ? "popup_opened" : ""}`}
+      onClick={handleClosePopupByOverlay}
+    >
       <div className="popup__container">
         <div
           className="popup__tooltip-image"

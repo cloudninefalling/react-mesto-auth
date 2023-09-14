@@ -1,12 +1,12 @@
 import React from "react";
 import AuthForm from "./AuthForm";
 import auth from "../utils/Auth";
-import tooltipImage from "../images/tooltip__error.svg";
+import tooltipErrorImage from "../images/tooltip__error.svg";
 
 export default function Login({ openTooltip, handleLogin }) {
   function showErrorTooltip() {
     openTooltip({
-      image: tooltipImage,
+      image: tooltipErrorImage,
       text: "Что-то пошло не так! Попробуйте ещё раз.",
     });
   }
